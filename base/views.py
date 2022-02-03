@@ -101,32 +101,41 @@ def userProfile(request, pk):
 @login_required(login_url='login')
 def createRoom(request):
     form = RoomForm()
-    if request.method == 'POST':
-        form = RoomForm(request.POST)
-        if form.is_valid():
-            room = form.save(commit=False) #gets the instance of the room
-            room.host = request.user
-            room.save()
-            return redirect('home')
+    topics = Topic.objects.all()
     
-    context = {'form': form}
+    if request.method == 'POST':
+        topic_name = request.POST.get('topic')
+        topic, created = Topic.objects.get_or_create(name=topic_name)
+        Room.objects.create(
+            host=request.user,
+            topic=topic,
+            name=request.POST.get('name'),
+            description=request.POST.get('description')
+        )
+        return redirect('home')
+    
+    context = {'form': form, 'topics': topics}
     return render(request, 'base/room_form.html', context)
 
 @login_required(login_url='login')
 def updateRoom(request, pk):
     room = Room.objects.get(id=pk)
     form = RoomForm(instance=room)
+    topics = Topic.objects.all()
     
     if request.user != room.host:
         return HttpResponse('You are not allowed here!!')
     
     if request.method == 'POST':
-        form = RoomForm(request.POST, instance=room)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
+        topic_name = request.POST.get('topic')
+        topic, created = Topic.objects.get_or_create(name=topic_name)
+        room.name = request.POST.get('name')
+        room.topic = topic
+        room.description = request.POST.get('description')
+        room.save()
+        return redirect('home')
     
-    context = {'form': form}
+    context = {'form': form, 'topics': topics, 'room':room}
     return render(request, 'base/room_form.html', context)
 
 @login_required(login_url='login')
@@ -152,3 +161,8 @@ def deleteMessage(request, pk):
         message.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {'obj':message})
+
+@login_required(login_url='login')
+def updateUser(request):
+    context = {}
+    return render(request, 'base/update-user.html', context)
