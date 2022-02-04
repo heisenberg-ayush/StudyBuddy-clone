@@ -1,4 +1,6 @@
-{% extends 'main.html' %} {% block content %}
+{% extends 'main.html' %} 
+
+{% block content %}
 <main class="profile-page layout layout--2">
   <div class="container">
     <!-- Room Start -->
@@ -140,9 +142,11 @@
           </div>
         </div>
       </div>
-      <div class="room__messages">
-        <form action="#">
-          <input name="" placeholder="Write your message here..." />
+      <div class="room__message">
+        <form action="" method="POST">
+          {% csrf_token %}
+
+          <input name="body" placeholder="Write your message here..." />
         </form>
       </div>
     </div>
